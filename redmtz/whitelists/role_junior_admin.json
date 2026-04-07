@@ -1,0 +1,103 @@
+{
+  "role": "junior_admin",
+  "description": "Junior System Administrator — read-only operations only. Discovery and monitoring. No writes, no executions, no infrastructure changes.",
+  "version": "1.0.0",
+  "allowed_patterns": [
+    {
+      "pattern_id": "ALLOW_LS",
+      "description": "ls — list directory contents",
+      "regex": "(?i)^\\s*ls(\\s|$)",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["ls -la", "ls /var/log", "ls -lh /tmp"]
+    },
+    {
+      "pattern_id": "ALLOW_CAT_LOG",
+      "description": "cat — read log and config files",
+      "regex": "(?i)\\bcat\\s+\\S+\\.(log|conf|cfg|yaml|yml|json|txt)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["cat /var/log/syslog", "cat /etc/nginx/nginx.conf"]
+    },
+    {
+      "pattern_id": "ALLOW_GREP",
+      "description": "grep — search file contents",
+      "regex": "(?i)^\\s*grep\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["grep -r ERROR /var/log/", "grep 'failed' /var/log/auth.log"]
+    },
+    {
+      "pattern_id": "ALLOW_PS",
+      "description": "ps — list running processes",
+      "regex": "(?i)^\\s*ps\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["ps aux", "ps -ef | grep nginx"]
+    },
+    {
+      "pattern_id": "ALLOW_TOP_HTOP",
+      "description": "top/htop — system resource monitoring",
+      "regex": "(?i)^\\s*(top|htop)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["top", "htop"]
+    },
+    {
+      "pattern_id": "ALLOW_DF_DU",
+      "description": "df/du — disk usage monitoring",
+      "regex": "(?i)^\\s*(df|du)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["df -h", "du -sh /var/log/*"]
+    },
+    {
+      "pattern_id": "ALLOW_PING",
+      "description": "ping — network connectivity check",
+      "regex": "(?i)^\\s*ping\\b",
+      "domain": "network",
+      "risk_level": "LOW",
+      "examples": ["ping 8.8.8.8", "ping -c 4 google.com"]
+    },
+    {
+      "pattern_id": "ALLOW_CURL_GET",
+      "description": "curl GET/HEAD — read-only HTTP requests",
+      "regex": "(?i)\\bcurl\\s+(-[a-zA-Z]*[IGs][a-zA-Z]*\\s+|--(?:head|get|silent)\\s+)\\S+",
+      "domain": "network",
+      "risk_level": "LOW",
+      "examples": ["curl -I https://example.com", "curl -s https://api.example.com/health"]
+    },
+    {
+      "pattern_id": "ALLOW_KUBECTL_GET",
+      "description": "kubectl get — read cluster state",
+      "regex": "(?i)\\bkubectl\\s+get\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["kubectl get pods -A", "kubectl get nodes"]
+    },
+    {
+      "pattern_id": "ALLOW_KUBECTL_LOGS",
+      "description": "kubectl logs — container log access",
+      "regex": "(?i)\\bkubectl\\s+logs\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["kubectl logs my-pod", "kubectl logs -f deployment/api"]
+    },
+    {
+      "pattern_id": "ALLOW_GIT_READ",
+      "description": "git read operations only",
+      "regex": "(?i)\\bgit\\s+(status|log|diff|show|branch)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["git status", "git log --oneline -5"]
+    },
+    {
+      "pattern_id": "ALLOW_SELECT_WHERE",
+      "description": "SQL SELECT with WHERE — scoped read-only queries",
+      "regex": "(?i)\\bSELECT\\b.+\\bFROM\\b.+\\bWHERE\\b",
+      "domain": "database",
+      "risk_level": "LOW",
+      "examples": ["SELECT id, name FROM users WHERE id = 42"]
+    }
+  ]
+}

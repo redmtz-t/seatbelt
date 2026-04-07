@@ -1,0 +1,87 @@
+{
+  "role": "mlops_engineer",
+  "description": "MLOps Engineer — model training pipelines, experiment tracking, S3 data access, inference endpoints. No IAM mutations, no VPC changes, no database DDL.",
+  "version": "1.0.0",
+  "allowed_patterns": [
+    {
+      "pattern_id": "ALLOW_S3_GET",
+      "description": "S3 get/download — read training data and artifacts",
+      "regex": "(?i)\\baws\\s+s3\\s+(cp|sync|ls|cat|get-object)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["aws s3 ls s3://my-bucket/data/", "aws s3 cp s3://my-bucket/model.pkl ."]
+    },
+    {
+      "pattern_id": "ALLOW_S3_PUT",
+      "description": "S3 put/upload — save model artifacts and outputs",
+      "regex": "(?i)\\baws\\s+s3\\s+(cp|sync|put-object)\\b.+s3://",
+      "domain": "system",
+      "risk_level": "MEDIUM",
+      "examples": ["aws s3 cp model.pkl s3://my-bucket/models/", "aws s3 sync ./output s3://my-bucket/runs/"]
+    },
+    {
+      "pattern_id": "ALLOW_SAGEMAKER_DESCRIBE",
+      "description": "SageMaker describe — read training job and endpoint status",
+      "regex": "(?i)\\baws\\s+sagemaker\\s+describe-",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["aws sagemaker describe-training-job --training-job-name my-job", "aws sagemaker describe-endpoint --endpoint-name prod-inference"]
+    },
+    {
+      "pattern_id": "ALLOW_SAGEMAKER_LIST",
+      "description": "SageMaker list — enumerate training jobs and models",
+      "regex": "(?i)\\baws\\s+sagemaker\\s+list-",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["aws sagemaker list-training-jobs", "aws sagemaker list-models"]
+    },
+    {
+      "pattern_id": "ALLOW_CLOUDWATCH_METRICS",
+      "description": "CloudWatch metrics — model performance and endpoint monitoring",
+      "regex": "(?i)\\baws\\s+cloudwatch\\s+get-metric",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["aws cloudwatch get-metric-statistics --metric-name Invocations"]
+    },
+    {
+      "pattern_id": "ALLOW_DOCKER_BUILD",
+      "description": "docker build — build training or inference container images",
+      "regex": "(?i)\\bdocker\\s+build\\b",
+      "domain": "system",
+      "risk_level": "MEDIUM",
+      "examples": ["docker build -t my-training-image .", "docker build -f Dockerfile.inference -t inference:latest ."]
+    },
+    {
+      "pattern_id": "ALLOW_DOCKER_IMAGES",
+      "description": "docker images/ps — read container state",
+      "regex": "(?i)\\bdocker\\s+(images|ps|inspect|logs)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["docker images", "docker ps -a", "docker logs my-container"]
+    },
+    {
+      "pattern_id": "ALLOW_PYTHON_RUN",
+      "description": "python script execution — run training and evaluation scripts",
+      "regex": "(?i)\\bpython3?\\s+\\S+\\.py\\b",
+      "domain": "system",
+      "risk_level": "MEDIUM",
+      "examples": ["python train.py --epochs 10", "python3 evaluate.py --model-path ./output"]
+    },
+    {
+      "pattern_id": "ALLOW_GIT_READ",
+      "description": "git read operations — check experiment code state",
+      "regex": "(?i)\\bgit\\s+(status|log|diff|show|branch|remote|fetch)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["git status", "git log --oneline -10", "git diff HEAD"]
+    },
+    {
+      "pattern_id": "ALLOW_SELECT_WHERE",
+      "description": "SQL SELECT with WHERE — scoped feature store or metadata queries",
+      "regex": "(?i)\\bSELECT\\b.+\\bFROM\\b.+\\bWHERE\\b",
+      "domain": "database",
+      "risk_level": "MEDIUM",
+      "examples": ["SELECT * FROM experiments WHERE run_id = '123'"]
+    }
+  ]
+}

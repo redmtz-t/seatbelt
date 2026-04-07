@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Binary blobs (system libraries accidentally in project dir)
+aiohttp
+asyncio
+sqlite3
+
+# Databases (contain runtime data, not source)
+*.db
+
+# Logs
+*.log
+
+# Backups
+*.bak
+
+# Legacy/archive
+legacy_synapse_v0/
+_archive_old_projects/
+
+# Signing keys — never commit
+keys/
+
+# OS
+.DS_Store
+
+# Python build artifacts
+dist/
+build/
+*.egg-info/

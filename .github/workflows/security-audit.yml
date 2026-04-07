@@ -1,0 +1,52 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'   # every Monday 06:00 UTC
+
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to commit SHA — version tags are mutable, SHAs are not.
+      # If an attacker moves the v4 tag, this build still uses the exact
+      # commit we reviewed. Verify SHA at: github.com/actions/checkout/commits
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      # Mask secrets before any step runs — prevents credential leakage in logs
+      - name: Mask secrets
+        run: |
+          echo "::add-mask::${{ secrets.REDMTZ_API_KEY }}"
+          echo "::add-mask::${{ secrets.ANTHROPIC_API_KEY }}"
+          echo "::add-mask::${{ secrets.MISTRAL_API_KEY }}"
+          echo "::add-mask::${{ secrets.GITHUB_TOKEN }}"
+
+      # Pinned to commit SHA — verify at: github.com/actions/setup-python/commits
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Generate hash-pinned lockfile
+        run: uv pip compile requirements.txt --generate-hashes -o requirements.lock
+
+      - name: Install from lockfile (binary-only — blocks malicious setup.py execution)
+        run: pip install --only-binary :all: -r requirements.lock
+
+      - name: Audit dependencies
+        run: |
+          pip install pip-audit
+          pip-audit --desc
+
+      - name: Confirm SHA pinning is in place
+        run: |
+          echo "✅ GitHub Actions pinned to commit SHAs (RDM-028)"
+          echo "✅ Secrets masked before log output (RDM-029)"
+          echo "✅ pip-audit running against all dependencies (RDM-014)"

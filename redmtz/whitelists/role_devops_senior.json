@@ -1,0 +1,137 @@
+{
+  "role": "devops_senior",
+  "description": "Senior DevOps Engineer — Kubernetes, Terraform, AWS. Read + analysis + scoped execution. No destroy, no IAM mutations, no database DDL.",
+  "version": "1.0.0",
+  "allowed_patterns": [
+    {
+      "pattern_id": "ALLOW_KUBECTL_GET",
+      "description": "kubectl get — read cluster state",
+      "regex": "(?i)\\bkubectl\\s+get\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["kubectl get pods -A", "kubectl get nodes", "kubectl get events -A"]
+    },
+    {
+      "pattern_id": "ALLOW_KUBECTL_DESCRIBE",
+      "description": "kubectl describe — deep dive into resource state",
+      "regex": "(?i)\\bkubectl\\s+describe\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["kubectl describe pod my-pod", "kubectl describe node worker-1"]
+    },
+    {
+      "pattern_id": "ALLOW_KUBECTL_TOP",
+      "description": "kubectl top — resource monitoring",
+      "regex": "(?i)\\bkubectl\\s+top\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["kubectl top pods --containers", "kubectl top nodes"]
+    },
+    {
+      "pattern_id": "ALLOW_KUBECTL_LOGS",
+      "description": "kubectl logs — container log access",
+      "regex": "(?i)\\bkubectl\\s+logs\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["kubectl logs my-pod", "kubectl logs -f deployment/api"]
+    },
+    {
+      "pattern_id": "ALLOW_KUBECTL_AUTH",
+      "description": "kubectl auth can-i — permission self-check",
+      "regex": "(?i)\\bkubectl\\s+auth\\s+can-i\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["kubectl auth can-i get pods", "kubectl auth can-i delete deployments"]
+    },
+    {
+      "pattern_id": "ALLOW_TERRAFORM_STATE_LIST",
+      "description": "terraform state list — read infrastructure state",
+      "regex": "(?i)\\bterraform\\s+state\\s+list\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["terraform state list", "terraform state list | grep eks"]
+    },
+    {
+      "pattern_id": "ALLOW_TERRAFORM_SHOW",
+      "description": "terraform show — inspect state or plan",
+      "regex": "(?i)\\bterraform\\s+show\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["terraform show", "terraform show tfplan.out"]
+    },
+    {
+      "pattern_id": "ALLOW_AWS_DESCRIBE",
+      "description": "AWS describe-* — read AWS resource state",
+      "regex": "(?i)\\baws\\s+\\w+\\s+describe-",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": [
+        "aws dynamodb describe-table --table-name UserTransactions",
+        "aws ec2 describe-instances",
+        "aws eks describe-cluster --name prod-blue"
+      ]
+    },
+    {
+      "pattern_id": "ALLOW_AWS_LIST",
+      "description": "AWS list-* — enumerate AWS resources",
+      "regex": "(?i)\\baws\\s+\\w+\\s+list-",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["aws s3api list-buckets", "aws iam list-roles", "aws dynamodb list-tables"]
+    },
+    {
+      "pattern_id": "ALLOW_TERRAFORM_PLAN",
+      "description": "terraform plan — preview infrastructure changes",
+      "regex": "(?i)\\bterraform\\s+plan\\b",
+      "domain": "system",
+      "risk_level": "MEDIUM",
+      "examples": ["terraform plan", "terraform plan -out=tfplan.out", "terraform plan -target=aws_eks_node_group.main"]
+    },
+    {
+      "pattern_id": "ALLOW_TERRAFORM_VALIDATE",
+      "description": "terraform validate — syntax and config validation",
+      "regex": "(?i)\\bterraform\\s+validate\\b",
+      "domain": "system",
+      "risk_level": "MEDIUM",
+      "examples": ["terraform validate"]
+    },
+    {
+      "pattern_id": "ALLOW_CLOUDWATCH_METRICS",
+      "description": "AWS CloudWatch get-metric-statistics — read metrics",
+      "regex": "(?i)\\baws\\s+cloudwatch\\s+get-metric",
+      "domain": "system",
+      "risk_level": "MEDIUM",
+      "examples": [
+        "aws cloudwatch get-metric-statistics --metric-name CPUUtilization",
+        "aws cloudwatch get-metric-statistics --metric-name ConsumedReadCapacityUnits"
+      ]
+    },
+    {
+      "pattern_id": "ALLOW_KUBECTL_PATCH",
+      "description": "kubectl patch — targeted resource update (scoped, non-destructive)",
+      "regex": "(?i)\\bkubectl\\s+patch\\b",
+      "domain": "system",
+      "risk_level": "MEDIUM",
+      "examples": ["kubectl patch deployment api --patch '{\"spec\":{\"replicas\":3}}'"]
+    },
+    {
+      "pattern_id": "ALLOW_SELECT_WHERE",
+      "description": "SQL SELECT with WHERE clause — scoped read query",
+      "regex": "(?i)\\bSELECT\\b.+\\bFROM\\b.+\\bWHERE\\b",
+      "domain": "database",
+      "risk_level": "MEDIUM",
+      "examples": [
+        "SELECT id, name FROM users WHERE id = 42",
+        "SELECT * FROM orders WHERE status = 'pending'"
+      ]
+    },
+    {
+      "pattern_id": "ALLOW_GIT_READ",
+      "description": "git read operations — status, log, diff, show",
+      "regex": "(?i)\\bgit\\s+(status|log|diff|show|branch|remote|fetch)\\b",
+      "domain": "system",
+      "risk_level": "LOW",
+      "examples": ["git status", "git log --oneline -10", "git diff HEAD"]
+    }
+  ]
+}
