@@ -334,7 +334,7 @@ print(database.get_chain_status())
 
 ---
 
-## Test Suite — 454/454 Passing
+## Test Suite — 518/518 Passing
 
 | Test File | Coverage | Tests |
 |-----------|----------|-------|
@@ -348,11 +348,13 @@ print(database.get_chain_status())
 | `test_verify_chain.py` | Chain integrity + export | 9 |
 | `test_schema_migration.py` | Schema v1/v2/v3 migration | 10 |
 | `test_mcp_gates.py` | MCP server + gates | 14 |
-| *(additional)* | Watchtower, resolver, integration | 159 |
+| `test_new_patterns.py` | Privilege escalation, pipe-to-shell, network exfil, service manipulation, git force push | 41 |
+| `test_rdm072_073.py` | Governance self-modification protection + tamper detection | 20 |
+| *(additional)* | Watchtower, resolver, integration | 162 |
 
 ```bash
 source venv/bin/activate
-pytest -q   # 454/454
+pytest -q   # 518/518
 ```
 
 ---
