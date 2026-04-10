@@ -1,0 +1,57 @@
+REDMTZ Seatbelt
+Copyright 2026 Robert Benitez
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+-------------------------------------------------------------------------------
+PATENT NOTICE
+-------------------------------------------------------------------------------
+
+This software may be covered by one or more pending patent applications
+filed by Robert Benitez. Patent protection, where granted, applies to the
+specific implementations and methods described in those applications.
+
+The Apache License 2.0 patent grant (Section 3) applies solely to the
+REDMTZ Seatbelt open-source software distributed under this license.
+It does not extend to any REDMTZ commercial product or service offered
+under separate terms.
+
+Use of this software does not grant any license to patents covering
+REDMTZ's commercial tiers, hosted services, or enterprise offerings.
+
+-------------------------------------------------------------------------------
+TRADEMARK NOTICE
+-------------------------------------------------------------------------------
+
+"REDMTZ", "Seatbelt", and associated logos are trademarks of Robert Benitez.
+This License does not grant permission to use these trade names or marks
+except as required for reasonable and customary use in describing the
+origin of the software.
+
+-------------------------------------------------------------------------------
+THIRD-PARTY COMPONENTS
+-------------------------------------------------------------------------------
+
+This software depends on the following third-party libraries, each
+governed by their own licenses:
+
+  cryptography — Apache 2.0 / BSD
+    https://github.com/pyca/cryptography
+
+  mcp — MIT
+    https://github.com/modelcontextprotocol/python-sdk
+
+A Software Bill of Materials (SBOM) in CycloneDX format is provided
+with each release for supply chain verification.
+
+-------------------------------------------------------------------------------

@@ -1,118 +1,47 @@
 {
   "role": "devops_senior",
-  "description": "Senior DevOps Engineer — Kubernetes, Terraform, AWS. Read + analysis + scoped execution. No destroy, no IAM mutations, no database DDL.",
-  "version": "1.0.0",
+  "description": "Senior DevOps Engineer — Kubernetes, Terraform, Docker, Git. Read + analysis + scoped execution. No destroy, no IAM mutations, no database DDL.",
+  "version": "2.0.0",
   "allowed_patterns": [
     {
-      "pattern_id": "ALLOW_KUBECTL_GET",
-      "description": "kubectl get — read cluster state",
-      "regex": "(?i)\\bkubectl\\s+get\\b",
+      "pattern_id": "ALLOW_KUBECTL_READ",
+      "description": "kubectl get/describe/logs/top — read cluster state",
+      "regex": "(?i)\\bkubectl\\s+(get|describe|logs|top)\\b",
       "domain": "system",
       "risk_level": "LOW",
-      "examples": ["kubectl get pods -A", "kubectl get nodes", "kubectl get events -A"]
+      "examples": ["kubectl get pods -A", "kubectl describe pod my-pod", "kubectl logs my-pod", "kubectl top nodes"]
     },
     {
-      "pattern_id": "ALLOW_KUBECTL_DESCRIBE",
-      "description": "kubectl describe — deep dive into resource state",
-      "regex": "(?i)\\bkubectl\\s+describe\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["kubectl describe pod my-pod", "kubectl describe node worker-1"]
-    },
-    {
-      "pattern_id": "ALLOW_KUBECTL_TOP",
-      "description": "kubectl top — resource monitoring",
-      "regex": "(?i)\\bkubectl\\s+top\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["kubectl top pods --containers", "kubectl top nodes"]
-    },
-    {
-      "pattern_id": "ALLOW_KUBECTL_LOGS",
-      "description": "kubectl logs — container log access",
-      "regex": "(?i)\\bkubectl\\s+logs\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["kubectl logs my-pod", "kubectl logs -f deployment/api"]
-    },
-    {
-      "pattern_id": "ALLOW_KUBECTL_AUTH",
-      "description": "kubectl auth can-i — permission self-check",
-      "regex": "(?i)\\bkubectl\\s+auth\\s+can-i\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["kubectl auth can-i get pods", "kubectl auth can-i delete deployments"]
-    },
-    {
-      "pattern_id": "ALLOW_TERRAFORM_STATE_LIST",
-      "description": "terraform state list — read infrastructure state",
-      "regex": "(?i)\\bterraform\\s+state\\s+list\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["terraform state list", "terraform state list | grep eks"]
-    },
-    {
-      "pattern_id": "ALLOW_TERRAFORM_SHOW",
-      "description": "terraform show — inspect state or plan",
-      "regex": "(?i)\\bterraform\\s+show\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["terraform show", "terraform show tfplan.out"]
-    },
-    {
-      "pattern_id": "ALLOW_AWS_DESCRIBE",
-      "description": "AWS describe-* — read AWS resource state",
-      "regex": "(?i)\\baws\\s+\\w+\\s+describe-",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": [
-        "aws dynamodb describe-table --table-name UserTransactions",
-        "aws ec2 describe-instances",
-        "aws eks describe-cluster --name prod-blue"
-      ]
-    },
-    {
-      "pattern_id": "ALLOW_AWS_LIST",
-      "description": "AWS list-* — enumerate AWS resources",
-      "regex": "(?i)\\baws\\s+\\w+\\s+list-",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["aws s3api list-buckets", "aws iam list-roles", "aws dynamodb list-tables"]
-    },
-    {
-      "pattern_id": "ALLOW_TERRAFORM_PLAN",
-      "description": "terraform plan — preview infrastructure changes",
-      "regex": "(?i)\\bterraform\\s+plan\\b",
+      "pattern_id": "ALLOW_TERRAFORM_READ",
+      "description": "terraform plan/show/validate/output — read and preview infrastructure",
+      "regex": "(?i)\\bterraform\\s+(plan|show|validate|output|state\\s+list)\\b",
       "domain": "system",
       "risk_level": "MEDIUM",
-      "examples": ["terraform plan", "terraform plan -out=tfplan.out", "terraform plan -target=aws_eks_node_group.main"]
+      "examples": ["terraform plan", "terraform show", "terraform validate", "terraform output", "terraform state list"]
     },
     {
-      "pattern_id": "ALLOW_TERRAFORM_VALIDATE",
-      "description": "terraform validate — syntax and config validation",
-      "regex": "(?i)\\bterraform\\s+validate\\b",
+      "pattern_id": "ALLOW_DOCKER_READ",
+      "description": "docker ps/images/logs/inspect — read container state",
+      "regex": "(?i)\\bdocker\\s+(ps|images|logs|inspect)\\b",
       "domain": "system",
-      "risk_level": "MEDIUM",
-      "examples": ["terraform validate"]
+      "risk_level": "LOW",
+      "examples": ["docker ps -a", "docker images", "docker logs my-container", "docker inspect my-container"]
     },
     {
-      "pattern_id": "ALLOW_CLOUDWATCH_METRICS",
-      "description": "AWS CloudWatch get-metric-statistics — read metrics",
-      "regex": "(?i)\\baws\\s+cloudwatch\\s+get-metric",
+      "pattern_id": "ALLOW_GIT_OPS",
+      "description": "git status/log/diff/pull/push/commit — standard git workflow (no force push)",
+      "regex": "(?i)\\bgit\\s+(status|log|diff|show|branch|remote|fetch|pull|push|commit|add)\\b",
       "domain": "system",
-      "risk_level": "MEDIUM",
-      "examples": [
-        "aws cloudwatch get-metric-statistics --metric-name CPUUtilization",
-        "aws cloudwatch get-metric-statistics --metric-name ConsumedReadCapacityUnits"
-      ]
+      "risk_level": "LOW",
+      "examples": ["git status", "git log --oneline -10", "git diff HEAD", "git commit -m 'fix'", "git push origin main"]
     },
     {
-      "pattern_id": "ALLOW_KUBECTL_PATCH",
-      "description": "kubectl patch — targeted resource update (scoped, non-destructive)",
-      "regex": "(?i)\\bkubectl\\s+patch\\b",
+      "pattern_id": "ALLOW_SHELL_READ",
+      "description": "Standard read/inspect shell commands",
+      "regex": "(?i)^\\s*(ls|cat|grep|find|head|tail|wc|df|du|free|top|ps|whoami|hostname|date|uptime)\\b",
       "domain": "system",
-      "risk_level": "MEDIUM",
-      "examples": ["kubectl patch deployment api --patch '{\"spec\":{\"replicas\":3}}'"]
+      "risk_level": "LOW",
+      "examples": ["ls -la", "cat /var/log/syslog", "grep ERROR log.txt", "head -20 file.txt", "whoami", "hostname", "free -h", "df -h"]
     },
     {
       "pattern_id": "ALLOW_SELECT_WHERE",
@@ -120,18 +49,31 @@
       "regex": "(?i)\\bSELECT\\b.+\\bFROM\\b.+\\bWHERE\\b",
       "domain": "database",
       "risk_level": "MEDIUM",
-      "examples": [
-        "SELECT id, name FROM users WHERE id = 42",
-        "SELECT * FROM orders WHERE status = 'pending'"
-      ]
+      "examples": ["SELECT id, name FROM users WHERE id = 42", "SELECT * FROM orders WHERE status = 'pending'"]
     },
     {
-      "pattern_id": "ALLOW_GIT_READ",
-      "description": "git read operations — status, log, diff, show",
-      "regex": "(?i)\\bgit\\s+(status|log|diff|show|branch|remote|fetch)\\b",
+      "pattern_id": "ALLOW_NET_DIAG",
+      "description": "Network diagnostics — ping, traceroute, dig, nslookup",
+      "regex": "(?i)^\\s*(ping|traceroute|dig|nslookup)\\b",
+      "domain": "network",
+      "risk_level": "LOW",
+      "examples": ["ping 8.8.8.8", "traceroute google.com", "dig example.com", "nslookup example.com"]
+    },
+    {
+      "pattern_id": "ALLOW_CURL_GET",
+      "description": "curl GET/HEAD only — no POST with data flags",
+      "regex": "(?i)\\bcurl\\s+(?!.*(-d\\b|--data\\b|-X\\s*(POST|PUT|DELETE|PATCH)\\b|--request\\s*(POST|PUT|DELETE|PATCH)\\b|-F\\b|--form\\b|-T\\b|--upload-file\\b))\\S+",
+      "domain": "network",
+      "risk_level": "LOW",
+      "examples": ["curl -I https://example.com", "curl -s https://api.example.com/health"]
+    },
+    {
+      "pattern_id": "ALLOW_AWS_READ",
+      "description": "AWS describe/list — read-only AWS operations",
+      "regex": "(?i)\\baws\\s+\\w+\\s+(describe-|list-|get-metric)",
       "domain": "system",
       "risk_level": "LOW",
-      "examples": ["git status", "git log --oneline -10", "git diff HEAD"]
+      "examples": ["aws ec2 describe-instances", "aws s3api list-buckets", "aws cloudwatch get-metric-statistics"]
     }
   ]
 }

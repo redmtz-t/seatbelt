@@ -35,7 +35,7 @@ from .decorator import GovernanceBlocked, govern
 from .patterns import DestructivePattern, PatternMatcher
 from .policies import get_policy, list_policies, policy_decision
 
-__version__ = "1.3.1"
+__version__ = "1.3.2"
 __author__  = "Robert Benitez"
 __email__   = "robert@redmtz.com"
 

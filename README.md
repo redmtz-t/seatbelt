@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-454%2F454%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-518%2F518%20passing-brightgreen.svg)]()
 [![PyPI](https://img.shields.io/badge/pypi-redmtz-blue.svg)](https://pypi.org/project/redmtz/)
 [![Supply Chain](https://img.shields.io/badge/supply%20chain-hash%20pinned-brightgreen.svg)]()
 [![Patents](https://img.shields.io/badge/patents-USPTO%20filed-blue.svg)]()
@@ -393,18 +393,16 @@ Seatbelt's signed envelope directly addresses **Article 12** (record-keeping and
 | Hash-pinned lockfile | ✅ | `requirements.lock` via `uv pip compile --generate-hashes` |
 | GitHub Actions SHA-pinned | ✅ | Immutable commit SHAs, not mutable version tags |
 | Secret masking in CI | ✅ | All keys masked before any log step |
-| CycloneDX SBOM | ✅ | `redmtz-1.3.1.sbom.json` ships with every release |
+| CycloneDX SBOM | ✅ | `redmtz-1.3.2.sbom.json` ships with every release |
 | 24-hour rule | Policy | Never install zero-day releases without community stress-testing |
 
 ---
 
 ## What's Coming
 
-**Cockpit** — Centralized multi-agent governance with neuro-symbolic analysis, human-in-the-loop approval, and fleet-wide policy management. Active development.
+Commercial tiers with centralized multi-agent fleet governance, human-in-the-loop approval workflows, and enterprise-grade audit retention are in active development.
 
-**Sovereign AI** — AWS Nitro Enclaves, hardware-attested governance, post-quantum cryptography, indefinite audit retention. Enterprise tier.
-
-Same envelope schema at every tier. Your Seatbelt audit history carries forward. You add gates — you replace nothing.
+Same envelope schema at every tier. Your Seatbelt audit history carries forward. You add capabilities — you replace nothing.
 
 ---
 
@@ -434,7 +432,7 @@ Same envelope schema at every tier. Your Seatbelt audit history carries forward.
 Apache License 2.0. Patent pending.
 
 See [LICENSE](LICENSE) and [NOTICE](NOTICE) for full terms.
-The Apache 2.0 patent grant applies to Seatbelt only.
-Cockpit and Sovereign AI are offered under separate commercial terms.
+The Apache 2.0 patent grant applies to REDMTZ Seatbelt only.
+Commercial tiers are offered under separate terms.
 
 *REDMTZ Seatbelt — Deterministic governance. Cryptographic proof. From line one.*

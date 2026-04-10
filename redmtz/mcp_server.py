@@ -34,7 +34,7 @@ Or directly:
     python -m redmtz.mcp_server
 
 Known limitation (post-Wednesday):
-  # TODO(RDM-034): Add WAL pre-signed stub buffer to close the crash-gap
+  # TODO: Add WAL pre-signed stub buffer for async crash-gap resilience
   # on any future async allow path. Current synchronous design has no gap —
   # envelope is on the ledger before return. If async is introduced later,
   # implement write-ahead log: stub → queue → full sign + delete stub.
@@ -81,13 +81,13 @@ def _initialize(policy_name: str = "safe_defaults", whitelist_path: str = "") ->
     )
 
     print(
-        f"[redmtz][SEATBELT] v1.3.1 — MCP governance server ready.\n"
+        f"[redmtz][SEATBELT] v1.3.2 — MCP governance server ready.\n"
         f"  Transport:  stdio\n"
         f"  Policy:     {policy_name}\n"
         f"  Whitelist:  {whitelist_status}\n"
         f"  Keys:       {sudo_signing.PUBLIC_KEY_PATH}\n"
         f"  Audit DB:   {database.DB_NAME}\n"
-        f"  Patterns:   8 active\n"
+        f"  Patterns:   13 active\n"
         f"  Mode:       deterministic (synchronous — all paths)\n"
         f"  Crash gap:  none (envelope written before return)",
         file=sys.stderr,
@@ -198,7 +198,7 @@ def govern_action(
         input_classification="unknown",
         model={
             "name":    "redmtz-seatbelt",
-            "version": "1.3.1",
+            "version": "1.3.2",
             "runtime": "symbolic",
         },
         sign=True,

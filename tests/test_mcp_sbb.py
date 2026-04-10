@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 test_mcp_sbb.py — MCP Server × SBB+SEDR Integration Tests
-redmtz Synapse Protocol
+redmtz Seatbelt
 
 Confirms that:
   1.  The module-level SBBWriter is properly wired in mcp_server.
@@ -153,7 +153,7 @@ def test_heartbeat_fires_in_sedr_and_sbb():
 
 def test_proceed_decision_written_to_sbb_and_sedr():
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("DELETE FROM blacklist_sovereign")
+    conn.execute("DELETE FROM blacklist_extended")
     conn.commit()
     conn.close()
 
@@ -178,7 +178,7 @@ def test_proceed_decision_written_to_sbb_and_sedr():
 def test_block_decision_written_to_sbb_and_sedr_with_correct_verdict():
     conn = sqlite3.connect(DB_PATH)
     conn.execute(
-        "INSERT OR REPLACE INTO blacklist_sovereign (type, value, reason, timestamp) VALUES (?,?,?,?)",
+        "INSERT OR REPLACE INTO blacklist_extended (type, value, reason, timestamp) VALUES (?,?,?,?)",
         ("nation", "TESTBLOCK", "SBB integration test", 1.0),
     )
     conn.commit()
@@ -220,7 +220,7 @@ def test_sedr_entries_carry_final_verdict_gate_label():
 def test_sedr_compliance_hash_matches_pipeline_result():
     conn = sqlite3.connect(DB_PATH)
     conn.execute(
-        "INSERT OR REPLACE INTO blacklist_sovereign (type, value, reason, timestamp) VALUES (?,?,?,?)",
+        "INSERT OR REPLACE INTO blacklist_extended (type, value, reason, timestamp) VALUES (?,?,?,?)",
         ("nation", "HASHCHECK", "hash verification test", 1.0),
     )
     conn.commit()

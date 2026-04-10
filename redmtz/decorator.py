@@ -65,6 +65,11 @@ def _infer_domain(param_name: str, func_name: str) -> str:
 
 
 def _extract_action(func, args: tuple, kwargs: dict) -> tuple[Optional[str], str]:
+    """
+    RDM-070: Scan ALL string arguments, not just the first.
+    Returns a concatenated action string so the pattern matcher
+    sees every string arg — no second-arg bypass path.
+    """
     try:
         sig   = inspect.signature(func)
         bound = sig.bind(*args, **kwargs)
@@ -76,15 +81,23 @@ def _extract_action(func, args: tuple, kwargs: dict) -> tuple[Optional[str], str
     if not params:
         return None, "*"
 
-    first_name, first_val = params[0]
+    # Collect all string arguments for pattern matching
+    string_args = [
+        (name, val) for name, val in params if isinstance(val, str)
+    ]
 
-    if first_name in _ALL_ACTION_PARAMS and isinstance(first_val, str):
-        return first_val, _infer_domain(first_name, func.__name__)
+    if not string_args:
+        return None, "*"
 
-    if isinstance(first_val, str):
-        return first_val, _infer_domain("", func.__name__)
+    # Infer domain from the first named string arg (most likely the primary action)
+    first_name, first_val = string_args[0]
+    domain = _infer_domain(first_name, func.__name__)
 
-    return None, "*"
+    # Concatenate all string args so the matcher sees every arg
+    # This closes the second-arg bypass path (RDM-070)
+    combined_action = " ".join(val for _, val in string_args)
+
+    return combined_action, domain
 
 
 def _sha256(content: Any) -> str:
@@ -144,13 +157,24 @@ def govern(rules: str = "destructive_actions", policy: str = "safe_defaults"):
             action, domain = _extract_action(func, args, kwargs)
 
             if action is None:
-                print(
-                    f"[redmtz][GOVERN] WARNING: Cannot extract action from "
-                    f"{func.__module__}.{func.__name__}() — "
-                    f"skipping pattern check (fail-open for unrecognized args).",
-                    file=sys.stderr,
-                )
-                return func(*args, **kwargs)
+                # RDM-062: Fail-closed on unrecognized first argument.
+                # Convert non-string args to their repr for pattern matching.
+                # If no args at all, allow (the function takes no input to govern).
+                if not args and not kwargs:
+                    return func(*args, **kwargs)
+                # repr() all positional args and join — fail-closed on any input
+                all_args = list(args) + list(kwargs.values())
+                if all_args:
+                    action = " ".join(repr(a) for a in all_args)
+                    domain = _infer_domain("", func.__name__)
+                    print(
+                        f"[redmtz][GOVERN] WARNING: No string args in "
+                        f"{func.__module__}.{func.__name__}() — "
+                        f"governing repr() of all args (fail-closed).",
+                        file=sys.stderr,
+                    )
+                else:
+                    return func(*args, **kwargs)
 
             # Step 2: Pattern matching
             matched = _matcher.match_all(action, domain)

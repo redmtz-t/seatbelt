@@ -30,7 +30,6 @@ Schema v3 additions (Seatbelt final):
 Hash function unchanged from v2. New columns are metadata, not part of the chain.
 envelope_hash is the canonical integrity proof going forward.
 
-Authored by: Yang (v0.4.3 original), Nexus (v0.5.0/v0.6.0 upgrade)
 Founder: Robert Benitez
 """
 
@@ -117,7 +116,7 @@ def init_db():
         """)
 
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS blacklist_sovereign (
+            CREATE TABLE IF NOT EXISTS blacklist_extended (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
                 type      TEXT    NOT NULL,
                 value     TEXT    NOT NULL,

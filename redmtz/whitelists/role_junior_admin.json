@@ -1,55 +1,31 @@
 {
   "role": "junior_admin",
-  "description": "Junior System Administrator — read-only operations only. Discovery and monitoring. No writes, no executions, no infrastructure changes.",
-  "version": "1.0.0",
+  "description": "Junior System Administrator — read-only operations only. Discovery and monitoring. No writes, no executions, no infrastructure changes. Implicit deny catches everything else.",
+  "version": "2.0.0",
   "allowed_patterns": [
     {
-      "pattern_id": "ALLOW_LS",
-      "description": "ls — list directory contents",
-      "regex": "(?i)^\\s*ls(\\s|$)",
+      "pattern_id": "ALLOW_SHELL_READ",
+      "description": "Standard read/inspect shell commands",
+      "regex": "(?i)^\\s*(ls|cat|grep|head|tail|wc|df|du|free|top|ps|whoami|hostname|date|uptime)\\b",
       "domain": "system",
       "risk_level": "LOW",
-      "examples": ["ls -la", "ls /var/log", "ls -lh /tmp"]
+      "examples": ["ls -la", "cat /var/log/syslog", "grep ERROR log.txt", "head -20 file.txt", "tail -f app.log", "wc -l data.csv", "df -h", "du -sh /var/log/*", "free -h", "ps aux", "whoami", "hostname", "date", "uptime"]
     },
     {
-      "pattern_id": "ALLOW_CAT_LOG",
-      "description": "cat — read log and config files",
-      "regex": "(?i)\\bcat\\s+\\S+\\.(log|conf|cfg|yaml|yml|json|txt)\\b",
+      "pattern_id": "ALLOW_KUBECTL_READ",
+      "description": "kubectl get/logs — read-only cluster access",
+      "regex": "(?i)\\bkubectl\\s+(get|logs)\\b",
       "domain": "system",
       "risk_level": "LOW",
-      "examples": ["cat /var/log/syslog", "cat /etc/nginx/nginx.conf"]
+      "examples": ["kubectl get pods -A", "kubectl get nodes", "kubectl logs my-pod"]
     },
     {
-      "pattern_id": "ALLOW_GREP",
-      "description": "grep — search file contents",
-      "regex": "(?i)^\\s*grep\\b",
+      "pattern_id": "ALLOW_GIT_READ",
+      "description": "git read operations only — no commit, no push",
+      "regex": "(?i)\\bgit\\s+(status|log|diff|show|branch)\\b",
       "domain": "system",
       "risk_level": "LOW",
-      "examples": ["grep -r ERROR /var/log/", "grep 'failed' /var/log/auth.log"]
-    },
-    {
-      "pattern_id": "ALLOW_PS",
-      "description": "ps — list running processes",
-      "regex": "(?i)^\\s*ps\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["ps aux", "ps -ef | grep nginx"]
-    },
-    {
-      "pattern_id": "ALLOW_TOP_HTOP",
-      "description": "top/htop — system resource monitoring",
-      "regex": "(?i)^\\s*(top|htop)\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["top", "htop"]
-    },
-    {
-      "pattern_id": "ALLOW_DF_DU",
-      "description": "df/du — disk usage monitoring",
-      "regex": "(?i)^\\s*(df|du)\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["df -h", "du -sh /var/log/*"]
+      "examples": ["git status", "git log --oneline -5", "git diff HEAD"]
     },
     {
       "pattern_id": "ALLOW_PING",
@@ -61,43 +37,11 @@
     },
     {
       "pattern_id": "ALLOW_CURL_GET",
-      "description": "curl GET/HEAD — read-only HTTP requests",
-      "regex": "(?i)\\bcurl\\s+(-[a-zA-Z]*[IGs][a-zA-Z]*\\s+|--(?:head|get|silent)\\s+)\\S+",
+      "description": "curl GET/HEAD only — read-only HTTP",
+      "regex": "(?i)\\bcurl\\s+(?!.*(-d\\b|--data\\b|-X\\s*(POST|PUT|DELETE|PATCH)\\b|--request\\s*(POST|PUT|DELETE|PATCH)\\b|-F\\b|--form\\b|-T\\b|--upload-file\\b))\\S+",
       "domain": "network",
       "risk_level": "LOW",
       "examples": ["curl -I https://example.com", "curl -s https://api.example.com/health"]
-    },
-    {
-      "pattern_id": "ALLOW_KUBECTL_GET",
-      "description": "kubectl get — read cluster state",
-      "regex": "(?i)\\bkubectl\\s+get\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["kubectl get pods -A", "kubectl get nodes"]
-    },
-    {
-      "pattern_id": "ALLOW_KUBECTL_LOGS",
-      "description": "kubectl logs — container log access",
-      "regex": "(?i)\\bkubectl\\s+logs\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["kubectl logs my-pod", "kubectl logs -f deployment/api"]
-    },
-    {
-      "pattern_id": "ALLOW_GIT_READ",
-      "description": "git read operations only",
-      "regex": "(?i)\\bgit\\s+(status|log|diff|show|branch)\\b",
-      "domain": "system",
-      "risk_level": "LOW",
-      "examples": ["git status", "git log --oneline -5"]
-    },
-    {
-      "pattern_id": "ALLOW_SELECT_WHERE",
-      "description": "SQL SELECT with WHERE — scoped read-only queries",
-      "regex": "(?i)\\bSELECT\\b.+\\bFROM\\b.+\\bWHERE\\b",
-      "domain": "database",
-      "risk_level": "LOW",
-      "examples": ["SELECT id, name FROM users WHERE id = 42"]
     }
   ]
 }

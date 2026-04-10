@@ -38,7 +38,7 @@ def _reset_db():
     """Drop and re-create the test database."""
     conn = sqlite3.connect(TEST_DB)
     conn.execute("DROP TABLE IF EXISTS audit_logs")
-    conn.execute("DROP TABLE IF EXISTS blacklist_sovereign")
+    conn.execute("DROP TABLE IF EXISTS blacklist_extended")
     conn.commit()
     conn.close()
     database.init_db()

@@ -1,5 +1,5 @@
 """
-test_mcp_gates.py — Phase 2, Test 7: mcp_server.py gate functions
+test_mcp_gates.py — MCP server gate function tests
 redmtz Test Harness
 
 Tests the six gate functions independently without MCP SDK transport.
@@ -132,7 +132,7 @@ def test_sovereign_clean_agent_passes():
 def test_sovereign_blacklisted_agent_blocked():
     conn = sqlite3.connect(DB_PATH)
     conn.execute(
-        "INSERT OR REPLACE INTO blacklist_sovereign (type, value, reason, timestamp) VALUES (?,?,?,?)",
+        "INSERT OR REPLACE INTO blacklist_extended (type, value, reason, timestamp) VALUES (?,?,?,?)",
         ("agent_id", "agent-evil", "Test blacklist", time.time())
     )
     conn.commit()
@@ -146,7 +146,7 @@ def test_sovereign_blacklisted_agent_blocked():
 def test_sovereign_blacklisted_nation_blocked():
     conn = sqlite3.connect(DB_PATH)
     conn.execute(
-        "INSERT OR REPLACE INTO blacklist_sovereign (type, value, reason, timestamp) VALUES (?,?,?,?)",
+        "INSERT OR REPLACE INTO blacklist_extended (type, value, reason, timestamp) VALUES (?,?,?,?)",
         ("nation", "NK", "Sanctioned", time.time())
     )
     conn.commit()
@@ -243,7 +243,7 @@ def test_final_verdict_audit_log_written():
 def test_full_pipeline_clean_action():
     # Clear blacklist for clean run
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("DELETE FROM blacklist_sovereign")
+    conn.execute("DELETE FROM blacklist_extended")
     conn.commit()
     conn.close()
     raw = mcp_server.verify_action(
@@ -263,7 +263,7 @@ def test_full_pipeline_clean_action():
 def test_full_pipeline_sovereign_block_is_hard_stop():
     conn = sqlite3.connect(DB_PATH)
     conn.execute(
-        "INSERT OR REPLACE INTO blacklist_sovereign (type, value, reason, timestamp) VALUES (?,?,?,?)",
+        "INSERT OR REPLACE INTO blacklist_extended (type, value, reason, timestamp) VALUES (?,?,?,?)",
         ("nation", "EVIL", "Sanctioned", time.time())
     )
     conn.commit()

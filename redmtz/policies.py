@@ -94,7 +94,7 @@ def policy_decision(policy: dict, risk_level: str) -> Decision:
     """
     decision = policy.get(risk_level, "block")
     if decision == "conditional":
-        return "block"  # Phase 2: defer to HITL. For now, block.
+        return "block"  # Future: defer to HITL. For now, block.
     return decision
 
 

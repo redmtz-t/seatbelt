@@ -1,6 +1,6 @@
 """
 test_envelope.py — RDM-019: Canonical Signed Event Envelope Tests
-redmtz Synapse Protocol
+redmtz Seatbelt
 
 20+ tests covering:
   - UUID v7 generation
@@ -225,7 +225,7 @@ def test_hash_chain_unbroken_across_10_envelopes():
     Note: build() reads previous_hash from the DB but does not write back.
     The DB chain (log_audit) and envelope chain are unified when the caller
     passes envelope["hash_chain"]["current_hash"] as the compliance_hash to
-    log_audit() — that integration is RDM-019 phase 2.
+    log_audit() — that integration is covered in the full chain tests.
     """
     factory = CanonicalEnvelope()
     hashes = set()

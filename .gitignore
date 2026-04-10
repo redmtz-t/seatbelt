@@ -18,12 +18,18 @@ sqlite3
 # Backups
 *.bak
 
-# Legacy/archive
-legacy_synapse_v0/
-_archive_old_projects/
 
 # Signing keys — never commit
 keys/
+
+# Claude Code hook settings — contains environment-specific paths
+.claude/settings.json
+
+# Internal role files — not for distribution
+redmtz/whitelists/role_claudius.json
+
+# Virtual environments
+.venv/
 
 # OS
 .DS_Store
