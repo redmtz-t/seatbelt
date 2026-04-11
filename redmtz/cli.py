@@ -259,8 +259,10 @@ def main():
     audit.add_argument(
         "--csv",
         metavar="OUTPUT_PATH",
+        nargs="?",
+        const=os.path.join(os.path.expanduser("~"), "redmtz_audit.csv"),
         default="",
-        help="Export full ledger as a signed CSV (e.g. --csv /tmp/audit.csv)",
+        help="Export full ledger as a signed CSV. Defaults to ~/redmtz_audit.csv if no path given.",
     )
     audit.set_defaults(func=_cmd_audit)
 
