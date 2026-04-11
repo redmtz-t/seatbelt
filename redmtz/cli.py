@@ -47,6 +47,23 @@ def _cmd_audit(args):
     from . import database
 
     database.init_db()
+
+    # CSV export path
+    if args.csv:
+        result = database.export_csv(args.csv)
+        if "error" in result:
+            print(f"Error exporting CSV: {result['error']}", file=sys.stderr)
+            sys.exit(1)
+        print(
+            f"[redmtz][SEATBELT] CSV export complete.\n"
+            f"  File:       {args.csv}\n"
+            f"  Rows:       {result['total_rows']}\n"
+            f"  SHA-256:    {result['csv_hash']}\n"
+            f"  Signature:  {result['signature'][:48]}...\n"
+            f"  Public key: {result['public_key_path']}"
+        )
+        return
+
     limit = min(max(1, args.limit), 100)
 
     try:
@@ -238,6 +255,12 @@ def main():
         type=int,
         default=10,
         help="Number of recent entries to show (max 100, default: 10)",
+    )
+    audit.add_argument(
+        "--csv",
+        metavar="OUTPUT_PATH",
+        default="",
+        help="Export full ledger as a signed CSV (e.g. --csv /tmp/audit.csv)",
     )
     audit.set_defaults(func=_cmd_audit)
 
