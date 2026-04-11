@@ -216,7 +216,7 @@ def gate(hook_input: dict, policy: str = "", whitelist_path: str = "") -> dict:
         input_classification="unknown",
         model={
             "name":    "redmtz-seatbelt",
-            "version": "1.3.2",
+            "version": "1.4.0",
             "runtime": "symbolic",
         },
         sign=True,
