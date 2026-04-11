@@ -81,7 +81,7 @@ def _initialize(policy_name: str = "safe_defaults", whitelist_path: str = "") ->
     )
 
     print(
-        f"[redmtz][SEATBELT] v1.3.2 — MCP governance server ready.\n"
+        f"[redmtz][SEATBELT] v1.4.0 — MCP governance server ready.\n"
         f"  Transport:  stdio\n"
         f"  Policy:     {policy_name}\n"
         f"  Whitelist:  {whitelist_status}\n"
@@ -198,7 +198,7 @@ def govern_action(
         input_classification="unknown",
         model={
             "name":    "redmtz-seatbelt",
-            "version": "1.3.2",
+            "version": "1.4.0",
             "runtime": "symbolic",
         },
         sign=True,
