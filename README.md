@@ -395,7 +395,7 @@ Seatbelt's signed envelope directly addresses **Article 12** (record-keeping and
 | Hash-pinned lockfile | ✅ | `requirements.lock` via `uv pip compile --generate-hashes` |
 | GitHub Actions SHA-pinned | ✅ | Immutable commit SHAs, not mutable version tags |
 | Secret masking in CI | ✅ | All keys masked before any log step |
-| CycloneDX SBOM | ✅ | `redmtz-1.3.2.sbom.json` ships with every release |
+| CycloneDX SBOM | ✅ | `redmtz-1.4.0.sbom.json` ships with every release |
 | 24-hour rule | Policy | Never install zero-day releases without community stress-testing |
 
 ---
