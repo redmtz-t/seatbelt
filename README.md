@@ -345,7 +345,7 @@ print(database.get_chain_status())
 
 ---
 
-## Test Suite — 518/518 Passing
+## Test Suite — 517/517 Passing
 
 | Test File | Coverage | Tests |
 |-----------|----------|-------|
@@ -365,7 +365,7 @@ print(database.get_chain_status())
 
 ```bash
 source venv/bin/activate
-pytest -q   # 518/518
+pytest -q   # 517/517
 ```
 
 ---
@@ -406,7 +406,7 @@ Seatbelt's signed envelope directly addresses **Article 12** (record-keeping and
 | Hash-pinned lockfile | ✅ | `requirements.lock` via `uv pip compile --generate-hashes` |
 | GitHub Actions SHA-pinned | ✅ | Immutable commit SHAs, not mutable version tags |
 | Secret masking in CI | ✅ | All keys masked before any log step |
-| CycloneDX SBOM | ✅ | `redmtz-1.4.0.sbom.json` ships with every release |
+| CycloneDX SBOM | ✅ | `redmtz-1.4.1.sbom.json` ships with every release |
 | 24-hour rule | Policy | Never install zero-day releases without community stress-testing |
 
 ---
