@@ -115,6 +115,77 @@ def _cmd_audit(args):
     print(f"\n{len(rows)} entries shown. Total in ledger: use --limit to see more.")
 
 
+def _cmd_seatbelt(args):
+    """Print the Seatbelt quick-reference guide."""
+    print("""
+╔════════════════════════════════════════════════════════════════╗
+║           REDMTZ SEATBELT — Terminal Quick Reference           ║
+║              AI Governance for Secure Decisions                ║
+╚════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ START THE GOVERNANCE SERVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  redmtz serve                              Start (safe_defaults)
+  redmtz serve --policy strict_prod         Production lockdown
+  redmtz serve --policy read_only           Block all writes
+  redmtz serve --policy audit_mode          Allow all, log everything
+  redmtz serve --policy strict_whitelist \\
+    --whitelist role_devops_senior.json     Role-based enforcement
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ QUERY THE AUDIT LEDGER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  redmtz audit                              Last 10 decisions
+  redmtz audit --limit 50                   Last 50 decisions
+  redmtz audit --csv                        Export to ~/redmtz_audit.csv
+  redmtz audit --csv /path/to/export.csv    Export to custom path
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ HOOKS — ENFORCED GOVERNANCE (AGENT CANNOT BYPASS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  redmtz hook install claude-code           Install enforced gate
+  redmtz hook uninstall claude-code         Remove gate
+
+  export REDMTZ_HOOK_POLICY=strict_prod     Set policy via env
+  export REDMTZ_HOOK_WHITELIST=/path/to/role.json
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ THREE ENFORCEMENT PATHS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  @govern decorator    ENFORCED — wraps the function, no bypass
+  hook install         ENFORCED — harness level, fires before tools
+  redmtz serve (MCP)   COOPERATIVE — agent chooses to call it
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ POLICIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  safe_defaults     Log all, allow safe reads/writes     (default)
+  read_only         Block all writes
+  audit_mode        Allow all, log everything            (WARNING: never prod)
+  strict_prod       Block destructive patterns
+  strict_whitelist  Whitelist-only — requires role JSON
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ OTHER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  redmtz version                            Print version
+  redmtz seatbelt                           This help screen
+  man redmtz                                Full man page (if installed)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Every decision leaves a cryptographically signed record.
+ Provable. Auditable. Enforceable. Even after quantum.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    """)
+
+
 def _cmd_hook_install(args):
     """Install Seatbelt as an enforced PreToolUse hook for an agent platform."""
     platform = args.platform
@@ -221,6 +292,13 @@ def main():
         description="REDMTZ Seatbelt — AI governance for any MCP-compatible agent.",
     )
     subparsers = parser.add_subparsers(dest="command", metavar="command")
+
+    # redmtz seatbelt
+    seatbelt = subparsers.add_parser(
+        "seatbelt",
+        help="Print the Seatbelt quick-reference guide",
+    )
+    seatbelt.set_defaults(func=_cmd_seatbelt)
 
     # redmtz serve
     serve = subparsers.add_parser(

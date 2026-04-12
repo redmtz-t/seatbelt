@@ -1,0 +1,166 @@
+.TH REDMTZ 1 "2026-04-13" "1.4.0" "REDMTZ Seatbelt"
+.SH NAME
+redmtz \- AI Governance for Python Functions and MCP Agents
+.SH SYNOPSIS
+.B redmtz
+\fICOMMAND\fR [\fIOPTIONS\fR]
+.SH DESCRIPTION
+.B REDMTZ Seatbelt
+is a cryptographic governance layer for AI agents and autonomous systems.
+Every agent action is intercepted, checked against a policy, and logged to
+a tamper-evident, hash-chained audit ledger signed with Ed25519.
+
+The audit proof you generate today holds up in court tomorrow.
+
+.B The three enforcement paths:
+.RS
+.IP \(bu 4
+\fB@govern decorator\fR \(em enforced at the Python function level. The agent cannot bypass.
+.IP \(bu 4
+\fBredmtz hook install\fR \(em enforced at the Claude Code harness level. Fires before any tool executes.
+.IP \(bu 4
+\fBredmtz serve (MCP)\fR \(em cooperative. Agent chooses to call the governance server.
+.RE
+
+.SH COMMANDS
+.TP
+.B seatbelt
+Print the Seatbelt quick-reference guide and exit.
+
+.TP
+.B serve
+Start the MCP governance server (stdio transport).
+.RS
+.TP
+.B \-\-policy \fIPOLICY\fR
+Policy template to enforce. Choices:
+.RS
+.IP \fBsafe_defaults\fR 4
+Log all, allow safe reads/writes. Default.
+.IP \fBread_only\fR 4
+Block all writes.
+.IP \fBaudit_mode\fR 4
+Allow all, log everything to ledger.
+.IP \fBstrict_prod\fR 4
+Block destructive patterns by default.
+.IP \fBstrict_whitelist\fR 4
+Only allow actions defined in a role whitelist JSON.
+.RE
+.TP
+.B \-\-whitelist \fIROLE_FILE\fR
+Path to a role whitelist JSON file. Required for strict_whitelist policy.
+.RE
+
+.TP
+.B audit
+Query the audit ledger from the terminal.
+.RS
+.TP
+.B \-\-limit \fIN\fR
+Number of recent entries to show (max 100, default: 10).
+.TP
+.B \-\-csv \fI[OUTPUT_PATH]\fR
+Export full ledger as a signed CSV. Defaults to ~/redmtz_audit.csv if no path given.
+.RE
+
+.TP
+.B hook install \fIPLATFORM\fR
+Install Seatbelt as an enforced PreToolUse hook for an agent platform.
+Currently supported: \fBclaude-code\fR
+
+.TP
+.B hook uninstall \fIPLATFORM\fR
+Remove Seatbelt hook from an agent platform.
+
+.TP
+.B version
+Print version and exit.
+
+.SH ENVIRONMENT
+.TP
+.B REDMTZ_HOOK_POLICY
+Policy to enforce when running as a hook. Default: \fBsafe_defaults\fR
+.TP
+.B REDMTZ_HOOK_WHITELIST
+Path to a role whitelist JSON file when running as a hook.
+
+.SH EXAMPLES
+.TP
+Start the MCP governance server with strict production policy:
+.B redmtz serve \-\-policy strict_prod
+
+.TP
+View the last 25 governance decisions:
+.B redmtz audit \-\-limit 25
+
+.TP
+Export a signed audit CSV for compliance:
+.B redmtz audit \-\-csv ~/compliance/redmtz_audit.csv
+
+.TP
+Install enforced governance hook for Claude Code:
+.B export REDMTZ_HOOK_POLICY=strict_prod
+.br
+.B redmtz hook install claude-code
+
+.TP
+Use a role whitelist with MCP server:
+.B redmtz serve \-\-policy strict_whitelist \-\-whitelist role_devops_senior.json
+
+.TP
+Quick governance check (two terminals):
+.B redmtz serve \-\-policy safe_defaults
+.br
+.B watch \-n 1 'redmtz audit \-\-limit 5'
+
+.SH FILES
+.TP
+.I .claude/settings.json
+Claude Code hook configuration. Written by \fBredmtz hook install\fR.
+.TP
+.I ~/redmtz_audit.csv
+Default CSV export path for \fBredmtz audit \-\-csv\fR.
+
+.SH POLICIES
+.TP
+.B safe_defaults
+Logs all actions. Allows safe reads and writes. Blocks known destructive patterns.
+Recommended for development environments.
+.TP
+.B read_only
+Blocks all write operations. Safe for read-only agent tasks.
+.TP
+.B audit_mode
+Allows all actions but logs everything. Use for observability without enforcement.
+WARNING: Never use in production. All actions pass through.
+.TP
+.B strict_prod
+Blocks destructive patterns by default. Recommended for production workloads.
+.TP
+.B strict_whitelist
+Only allows actions defined in the role whitelist JSON file.
+Most restrictive policy. Requires \-\-whitelist flag.
+
+.SH EXIT STATUS
+.TP
+.B 0
+Success.
+.TP
+.B 1
+Error — see stderr for details.
+
+.SH THE PROMISE
+Every decision leaves a cryptographically signed record.
+Provable. Auditable. Enforceable. Even after quantum.
+
+.SH AUTHOR
+Robert Benitez <robert@redmtz.com>
+.br
+U.S. Provisional Patent Application 63/994,312
+
+.SH SEE ALSO
+Full documentation: https://redmtz.com
+.br
+Source: https://github.com/redmtz-t/seatbelt
+.br
+PyPI: https://pypi.org/project/redmtz

@@ -4,10 +4,21 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)]()
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
-[![Tests](https://img.shields.io/badge/tests-518%2F518%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-517%2F517%20passing-brightgreen.svg)]()
 [![PyPI](https://img.shields.io/badge/pypi-redmtz-blue.svg)](https://pypi.org/project/redmtz/)
 [![Supply Chain](https://img.shields.io/badge/supply%20chain-hash%20pinned-brightgreen.svg)]()
 [![Patents](https://img.shields.io/badge/patents-USPTO%20filed-blue.svg)]()
+
+---
+
+## New Here? Start Here.
+
+```bash
+pip install redmtz
+redmtz seatbelt
+```
+
+That's it. `redmtz seatbelt` prints the full command reference — everything you need to govern your first agent in under 5 minutes.
 
 ---
 
