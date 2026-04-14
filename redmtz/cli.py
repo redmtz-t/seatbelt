@@ -175,6 +175,7 @@ def _cmd_seatbelt(args):
  OTHER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+  redmtz verify                             Verify audit chain integrity
   redmtz version                            Print version
   redmtz seatbelt                           This help screen
   man redmtz                                Full man page (if installed)
@@ -184,6 +185,27 @@ def _cmd_seatbelt(args):
  Provable. Auditable. Enforceable. Even after quantum.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     """)
+
+
+def _cmd_verify(args):
+    """Verify the audit ledger hash chain integrity."""
+    from . import database
+    database.init_db()
+    result = database.verify_chain()
+    valid = result.get("valid", False)
+    total = result.get("total_entries", 0)
+    message = result.get("message", "")
+    first_break = result.get("first_break")
+
+    if total == 0:
+        print("Audit ledger is empty. Nothing to verify.")
+        return
+
+    if valid:
+        print(f"\n  ✅ CHAIN INTACT — {total} {'entry' if total == 1 else 'entries'} verified.\n")
+    else:
+        print(f"\n  ❌ CHAIN BROKEN at entry {first_break}.\n  {message}\n")
+        sys.exit(1)
 
 
 def _cmd_hook_install(args):
@@ -199,9 +221,8 @@ def _cmd_hook_install(args):
     hooks_path = os.path.abspath(hooks_module.__file__)
     python_path = sys.executable
 
-    # Determine settings file location
-    project_dir = os.getcwd()
-    claude_dir = os.path.join(project_dir, ".claude")
+    # Determine settings file location — always ~/.claude/settings.json
+    claude_dir = os.path.join(os.path.expanduser("~"), ".claude")
     settings_path = os.path.join(claude_dir, "settings.json")
 
     # Build the hook command
@@ -267,7 +288,7 @@ def _cmd_hook_uninstall(args):
         print(f"Error: unsupported platform '{platform}'. Supported: claude-code")
         sys.exit(1)
 
-    settings_path = os.path.join(os.getcwd(), ".claude", "settings.json")
+    settings_path = os.path.join(os.path.expanduser("~"), ".claude", "settings.json")
 
     if not os.path.exists(settings_path):
         print(f"No settings found at {settings_path}. Nothing to uninstall.")
@@ -343,6 +364,13 @@ def main():
         help="Export full ledger as a signed CSV. Defaults to ~/redmtz_audit.csv if no path given.",
     )
     audit.set_defaults(func=_cmd_audit)
+
+    # redmtz verify
+    verify = subparsers.add_parser(
+        "verify",
+        help="Verify audit ledger hash chain integrity",
+    )
+    verify.set_defaults(func=_cmd_verify)
 
     # redmtz hook
     hook = subparsers.add_parser("hook", help="Manage harness-level governance hooks")
