@@ -241,12 +241,14 @@ def govern(rules: str = "destructive_actions", policy: str = "safe_defaults"):
             try:
                 database.log_audit(
                     intent="seatbelt_govern",
-                    command=f"{func.__name__}(digest={_sha256(action)[:16]}...)",
+                    command=action,
                     verdict=decision_str,
                     reason=gate_reason,
                     skill="seatbelt",
                     agent_id=actor_identity,
                     envelope=envelope,
+                    policy=policy,
+                    patterns_matched=[p.pattern_id for p in matched] if matched else [],
                 )
             except Exception as e:
                 print(

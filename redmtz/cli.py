@@ -110,7 +110,13 @@ def _cmd_audit(args):
         # Clean up multiline commands for display
         command = command.replace("\n", " ")
 
-        print(f"{rid:>4}  {timestamp:<28}  {agent_id:<18}  {verdict:<8}  {policy:<14}  {command:<50}  {reason:<30}  {patterns:<20}  {envelope_hash:<20}  {sig_alg}")
+        row = f"{rid:>4}  {timestamp:<28}  {agent_id:<18}  {verdict:<8}  {policy:<14}  {command:<50}  {reason:<30}  {patterns:<20}  {envelope_hash:<20}  {sig_alg}"
+        if verdict == "BLOCK":
+            print(f"\033[31m{row}\033[0m")   # red
+        elif verdict == "ALLOW":
+            print(f"\033[32m{row}\033[0m")   # green
+        else:
+            print(row)
 
     print(f"\n{len(rows)} entries shown. Total in ledger: use --limit to see more.")
 
