@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "redmtz"
-version = "1.4.1"
+version = "1.4.3"
 description = "AI Governance for Python Functions and MCP Agents — Cryptographically signed audit envelopes for every decision."
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [
-    { name = "Robert Benitez", email = "robert@redmtz.com" }
+    { name = "Robert Benitez", email = "robertbenitez@redmtz.com" }
 ]
 keywords = [
     "ai-governance",

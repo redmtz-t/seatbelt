@@ -26,8 +26,14 @@ Founder: Robert Benitez
 
 import json
 import os
+import re
 import sys
 import argparse
+
+
+def _strip_ansi(s: str) -> str:
+    """Strip ANSI escape sequences from ledger fields before terminal output."""
+    return re.sub(r'\033\[[0-9;]*[mGKHF]', '', str(s))
 
 
 def _cmd_serve(args):
@@ -97,18 +103,17 @@ def _cmd_audit(args):
         rid           = row[0]
         timestamp     = row[1]
         environment   = row[2] or "unknown"
-        agent_id      = row[3] or "unknown"
+        agent_id      = _strip_ansi(row[3] or "unknown")
         intent        = row[4]
-        command       = row[5][:48] + ".." if len(row[5]) > 48 else row[5]
+        raw_cmd       = _strip_ansi(row[5]).replace("\n", " ")
+        command       = raw_cmd[:48] + ".." if len(raw_cmd) > 48 else raw_cmd
         verdict       = row[6]
-        reason        = row[7][:28] + ".." if len(row[7]) > 28 else row[7]
-        policy        = row[8] or "unknown"
+        raw_reason    = _strip_ansi(row[7])
+        reason        = raw_reason[:28] + ".." if len(raw_reason) > 28 else raw_reason
+        policy        = _strip_ansi(row[8] or "unknown")
         patterns      = row[9] if row[9] else ""
         envelope_hash = (row[10][:16] + "...") if row[10] else ""
         sig_alg       = row[11] or "sha256+ed25519"
-
-        # Clean up multiline commands for display
-        command = command.replace("\n", " ")
 
         row = f"{rid:>4}  {timestamp:<28}  {agent_id:<18}  {verdict:<8}  {policy:<14}  {command:<50}  {reason:<30}  {patterns:<20}  {envelope_hash:<20}  {sig_alg}"
         if verdict == "BLOCK":
@@ -191,6 +196,119 @@ def _cmd_seatbelt(args):
  Provable. Auditable. Enforceable. Even after quantum.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     """)
+
+
+def _cmd_seatbelt_unbuckle(args):
+    """Human-initiated hook disable with audit trail. Agent cannot call this."""
+    import datetime
+
+    settings_path = os.path.join(os.path.expanduser("~"), ".claude", "settings.json")
+
+    if not os.path.exists(settings_path):
+        print("No hook installed. Nothing to unbuckle.")
+        return
+
+    with open(settings_path, "r") as f:
+        settings = json.load(f)
+
+    if "hooks" not in settings:
+        print("Seatbelt hook is not currently installed.")
+        return
+
+    print("\n⚠️  SEATBELT UNBUCKLE — Governance enforcement will be suspended.")
+    print("   Every agent action until re-buckle is UNGOVERNED.")
+    print("   This event will be logged to the audit ledger.\n")
+
+    confirm = input("   Are you sure you want to unbuckle? (y/N): ").strip().lower()
+    if confirm != "y":
+        print("\n   Aborted. Seatbelt remains buckled. ✅\n")
+        return
+
+    # Stash the hook config so buckle can restore it
+    stash_path = os.path.join(os.path.expanduser("~"), ".claude", ".seatbelt_stash.json")
+    with open(stash_path, "w") as f:
+        json.dump(settings["hooks"], f, indent=2)
+    os.chmod(stash_path, 0o600)
+
+    del settings["hooks"]
+    with open(settings_path, "w") as f:
+        json.dump(settings, f, indent=2)
+        f.write("\n")
+    os.chmod(settings_path, 0o600)
+
+    # Log unbuckle event to audit ledger
+    try:
+        from . import database
+        database.init_db()
+        database.log_audit(
+            environment="operator",
+            agent_id="human-operator",
+            intent="seatbelt_unbuckle",
+            command="redmtz seatbelt unbuckle",
+            verdict="ALLOW",
+            reason=f"Human operator suspended governance enforcement at {datetime.datetime.utcnow().isoformat()}Z",
+            policy="operator_action",
+            patterns_matched="",
+        )
+    except Exception:
+        pass  # Never block unbuckle on ledger failure
+
+    print("\n🔓 Seatbelt unbuckled. You have the wheel.")
+    print("   Run 'redmtz seatbelt buckle' to restore governance.\n")
+
+
+def _cmd_seatbelt_buckle(args):
+    """Human-initiated hook restore with audit trail."""
+    import datetime
+
+    settings_path = os.path.join(os.path.expanduser("~"), ".claude", "settings.json")
+    stash_path = os.path.join(os.path.expanduser("~"), ".claude", ".seatbelt_stash.json")
+
+    if not os.path.exists(stash_path):
+        print("\n   No stashed hook config found. Run 'redmtz hook install claude-code' to install fresh.\n")
+        return
+
+    print("\n🔒 SEATBELT BUCKLE — Restoring governance enforcement.\n")
+
+    confirm = input("   Reinstall Seatbelt governance hook? (y/N): ").strip().lower()
+    if confirm != "y":
+        print("\n   Aborted. Seatbelt remains unbuckled.\n")
+        return
+
+    with open(stash_path, "r") as f:
+        stashed_hooks = json.load(f)
+
+    if os.path.exists(settings_path):
+        with open(settings_path, "r") as f:
+            settings = json.load(f)
+    else:
+        settings = {}
+
+    settings["hooks"] = stashed_hooks
+    with open(settings_path, "w") as f:
+        json.dump(settings, f, indent=2)
+        f.write("\n")
+
+    os.remove(stash_path)
+
+    # Log buckle event to audit ledger
+    try:
+        from . import database
+        database.init_db()
+        database.log_audit(
+            environment="operator",
+            agent_id="human-operator",
+            intent="seatbelt_buckle",
+            command="redmtz seatbelt buckle",
+            verdict="ALLOW",
+            reason=f"Human operator restored governance enforcement at {datetime.datetime.utcnow().isoformat()}Z",
+            policy="operator_action",
+            patterns_matched="",
+        )
+    except Exception:
+        pass
+
+    print("\n✅ Seatbelt buckled. Claudius is governed.\n")
 
 
 def _cmd_verify(args):
@@ -323,9 +441,16 @@ def main():
     # redmtz seatbelt
     seatbelt = subparsers.add_parser(
         "seatbelt",
-        help="Print the Seatbelt quick-reference guide",
+        help="Seatbelt governance controls",
     )
     seatbelt.set_defaults(func=_cmd_seatbelt)
+    seatbelt_sub = seatbelt.add_subparsers(dest="seatbelt_command", metavar="action")
+
+    unbuckle_p = seatbelt_sub.add_parser("unbuckle", help="Suspend governance hook (human-only, logged)")
+    unbuckle_p.set_defaults(func=_cmd_seatbelt_unbuckle)
+
+    buckle_p = seatbelt_sub.add_parser("buckle", help="Restore governance hook (human-only, logged)")
+    buckle_p.set_defaults(func=_cmd_seatbelt_buckle)
 
     # redmtz serve
     serve = subparsers.add_parser(

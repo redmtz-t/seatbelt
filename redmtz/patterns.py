@@ -91,10 +91,15 @@ PATTERN_DELETE_NO_WHERE = DestructivePattern(
 
 PATTERN_RM_RF_ROOT = DestructivePattern(
     pattern_id="BLOCK_RM_RF_ROOT",
-    description="rm -rf targeting system root paths",
+    description="rm with recursive + force flags on root or critical system directories",
     regex_matchers=[
-        r"(?i)\brm\s+(-\w+\s+)*-[^\s]*r[^\s]*f[^\s]*\s+"
-        r"(/\s*(?:;|$)|(?:/(?:etc|bin|lib|lib64|usr|boot|sys|proc|dev|home|root|var|opt))\b)",
+        # Any r+f flag combo (any order, combined or split) targeting root exactly
+        r"(?i)\brm\s+(?:-[a-zA-Z]*[rR][a-zA-Z]*\s+|-[a-zA-Z]*[fF][a-zA-Z]*\s+|-[rR]\s+-[fF]\s+|-[fF]\s+-[rR]\s+){1,4}/\s*(?:;|$)",
+        # Any r+f flag combo targeting critical system directories
+        r"(?i)\brm\s+(?:-[a-zA-Z]*[rR][a-zA-Z]*\s+|-[a-zA-Z]*[fF][a-zA-Z]*\s+|-[rR]\s+-[fF]\s+|-[fF]\s+-[rR]\s+){1,4}/(?:etc|bin|lib|lib64|usr|boot|sys|proc|dev|home|root|var|opt)\b",
+        # Long flags in any order, any critical path
+        r"(?i)\brm\s+.*--recursive.*--force\s+/(?:$|\s|etc|bin|lib|usr|boot|sys|proc|dev|home|root)",
+        r"(?i)\brm\s+.*--force.*--recursive\s+/(?:$|\s|etc|bin|lib|usr|boot|sys|proc|dev|home|root)",
     ],
     domains=["system", "*"],
     risk_level="CRITICAL",
@@ -102,8 +107,37 @@ PATTERN_RM_RF_ROOT = DestructivePattern(
         "Never run rm -rf on system paths from an agent. "
         "Use targeted file removal with explicit paths and confirmation."
     ),
-    examples_blocked=["rm -rf /", "rm -rf /etc", "rm -rf /usr/bin", "rm -rf /home"],
+    examples_blocked=[
+        "rm -rf /", "rm -rf /etc", "rm -rf /usr/bin", "rm -rf /home",
+        "rm -r -f /", "rm -f -r /etc", "rm -rfv /etc",
+        "rm --recursive --force /", "rm --force --recursive /boot",
+    ],
     examples_allowed=["rm -rf /tmp/cache", "rm -f /tmp/myfile.txt"],
+)
+
+PATTERN_PYTHON_DESTRUCTIVE_FS = DestructivePattern(
+    pattern_id="BLOCK_PYTHON_DESTRUCTIVE_FS",
+    description="Python-based destructive filesystem operations that bypass shell-level rm blocks",
+    regex_matchers=[
+        r"(?i)\bshutil\.rmtree\s*\(",
+        r"(?i)\bos\.remove\s*\(\s*['\"]?\s*/(?:etc|bin|lib|usr|boot|sys|home|root|var|opt)",
+        r"(?i)\bos\.unlink\s*\(\s*['\"]?\s*/(?:etc|bin|lib|usr|boot|sys|home|root|var|opt)",
+        r"(?i)\bpathlib\b.+\.rmdir\s*\(\s*\)",
+        r"(?i)\bsubprocess\b.+['\"]rm\s+-rf['\"]",
+    ],
+    domains=["python", "system", "*"],
+    risk_level="CRITICAL",
+    remediation_hint=(
+        "Python filesystem deletion bypasses shell-level rm guards. "
+        "Use targeted os.remove() with explicit relative paths only. "
+        "shutil.rmtree() requires explicit HITL approval."
+    ),
+    examples_blocked=[
+        "shutil.rmtree('/tmp/work')",
+        "import shutil; shutil.rmtree(path)",
+        "python3 -c \"import shutil; shutil.rmtree('/home/user')\"",
+    ],
+    examples_allowed=["os.remove('output.txt')", "pathlib.Path('dist/file.js').unlink()"],
 )
 
 PATTERN_CRED_THEFT = DestructivePattern(
@@ -385,6 +419,139 @@ PATTERN_GOVERNANCE_SELF_MODIFY = DestructivePattern(
 )
 
 
+# ── EG Review: DROP DATABASE / SCHEMA ───────────────────────────────────────
+
+PATTERN_DROP_DATABASE = DestructivePattern(
+    pattern_id="BLOCK_DROP_DATABASE",
+    description="DROP DATABASE / DROP SCHEMA — destroys entire database or schema",
+    regex_matchers=[
+        r"(?i)^\s*DROP\s+(?:DATABASE|SCHEMA)\b",
+    ],
+    domains=["database"],
+    risk_level="CRITICAL",
+    remediation_hint=(
+        "Dropping a database is irreversible. "
+        "Use a backup (pg_dump, mysqldump) first. "
+        "Consider renaming instead: ALTER DATABASE old RENAME TO archive_old."
+    ),
+    examples_blocked=[
+        "DROP DATABASE production",
+        "drop schema public",
+        "DROP DATABASE IF EXISTS app_db",
+        "DROP SCHEMA myapp CASCADE",
+    ],
+    examples_allowed=[
+        "SELECT * FROM drop_database_log",
+        "CREATE DATABASE new_db",
+    ],
+)
+
+# ── EG Review: UPDATE without WHERE ─────────────────────────────────────────
+
+PATTERN_UPDATE_NO_WHERE = DestructivePattern(
+    pattern_id="BLOCK_UPDATE_NO_WHERE",
+    description="UPDATE without WHERE clause — silently corrupts every row in the table",
+    regex_matchers=[
+        # UPDATE table SET ... with no WHERE token anywhere in the statement
+        r"(?i)^\s*UPDATE\s+\w+\s+SET\s+(?:(?!\bWHERE\b).)*$",
+        # WHERE 1=1 bypass
+        r"(?i)\bUPDATE\s+\w+\s+SET\b.*\bWHERE\s+1\s*=\s*1\b",
+    ],
+    domains=["database"],
+    risk_level="CRITICAL",
+    remediation_hint=(
+        "UPDATE without WHERE modifies every row in the table. "
+        "Always add a WHERE clause targeting specific records. "
+        "If a full-table update is truly intended, make it explicit with WHERE TRUE."
+    ),
+    examples_blocked=[
+        "UPDATE users SET active = true",
+        "update logs set deleted=1;",
+        "UPDATE users SET password='reset' WHERE 1=1",
+    ],
+    examples_allowed=[
+        "UPDATE users SET active = true WHERE id = 123",
+        "UPDATE logs SET archived = true WHERE created_at < '2024-01-01'",
+    ],
+)
+
+# ── EG Review: Dangerous File Write ─────────────────────────────────────────
+
+PATTERN_DANGEROUS_FILE_WRITE = DestructivePattern(
+    pattern_id="BLOCK_DANGEROUS_FILE_WRITE",
+    description="Write or redirect to critical system files (/etc/passwd, /root/.ssh, block devices)",
+    regex_matchers=[
+        # Shell redirect to critical paths
+        r"(?i)(?:echo|cat|printf|dd)\s+.*[>]{1,2}\s*/(?:etc|root|boot|bin|lib|usr|dev/sd)",
+        # Python open() in write mode to critical paths
+        r"(?i)\bopen\s*\(\s*['\"]/?(?:etc|root|boot|bin|lib|usr|dev/sd)",
+    ],
+    domains=["file", "system"],
+    risk_level="CRITICAL",
+    remediation_hint=(
+        "Writing to system configuration or device files can destroy the OS or create backdoors. "
+        "Only write to paths under your application directory, /tmp, or explicit user data folders."
+    ),
+    examples_blocked=[
+        "echo 'root::0:0:' > /etc/passwd",
+        "cat /dev/zero > /dev/sda",
+        "open('/etc/shadow', 'w')",
+        "printf 'malicious' >> /root/.bashrc",
+    ],
+    examples_allowed=[
+        "echo 'hello' > /tmp/test.log",
+        "open('/app/data/config.json', 'w')",
+    ],
+)
+
+# ── EG Review: Shutdown / Reboot ─────────────────────────────────────────────
+
+PATTERN_SHUTDOWN_REBOOT = DestructivePattern(
+    pattern_id="BLOCK_SHUTDOWN_REBOOT",
+    description="Shutdown, reboot, halt, or poweroff — stops or restarts the entire machine",
+    regex_matchers=[
+        r"(?i)\b(?:shutdown|reboot|halt|poweroff)\b",
+        r"(?i)\binit\s+0\b",
+        r"(?i)\btelinit\s+0\b",
+    ],
+    domains=["system", "*"],
+    risk_level="CRITICAL",
+    remediation_hint=(
+        "These commands stop or restart the entire machine. "
+        "Never call them from an agent. "
+        "Use proper orchestration tools (systemd timers, Kubernetes lifecycle hooks) instead."
+    ),
+    examples_blocked=[
+        "shutdown -h now", "reboot", "shutdown now",
+        "halt -p", "poweroff", "init 0",
+    ],
+    examples_allowed=[],
+)
+
+# ── EG Review: Disk Wipe ─────────────────────────────────────────────────────
+
+PATTERN_DISK_WIPE = DestructivePattern(
+    pattern_id="BLOCK_DISK_WIPE",
+    description="Disk wiping or low-level formatting — dd, mkfs, fdisk, parted targeting block devices",
+    regex_matchers=[
+        r"(?i)\bdd\s+if=/dev/(?:zero|urandom|random)\s+of=",
+        r"(?i)\b(?:mkfs|fdisk|parted|dd)\b.*(?:/dev/sd|/dev/nvme|/dev/vd)",
+    ],
+    domains=["system", "file"],
+    risk_level="CRITICAL",
+    remediation_hint=(
+        "These commands can permanently erase drives. "
+        "Never run low-level disk tools from agent-executed code."
+    ),
+    examples_blocked=[
+        "dd if=/dev/zero of=/dev/sda",
+        "mkfs.ext4 /dev/nvme0n1",
+        "fdisk /dev/sda",
+        "parted /dev/vda mklabel gpt",
+    ],
+    examples_allowed=[],
+)
+
 # ── Audit Finding: Git Force Push ────────────────────────────────────────────
 
 PATTERN_GIT_FORCE_PUSH = DestructivePattern(
@@ -418,6 +585,7 @@ PATTERNS: tuple = (
     PATTERN_TRUNCATE,
     PATTERN_DELETE_NO_WHERE,
     PATTERN_RM_RF_ROOT,
+    PATTERN_PYTHON_DESTRUCTIVE_FS,
     PATTERN_CRED_THEFT,
     PATTERN_SQL_INJECTION_OBVIOUS,
     PATTERN_SHELL_EXEC_DANGEROUS,
@@ -426,6 +594,11 @@ PATTERNS: tuple = (
     PATTERN_PIPE_TO_SHELL,
     PATTERN_NETWORK_EXFIL,
     PATTERN_SERVICE_MANIPULATION,
+    PATTERN_DROP_DATABASE,
+    PATTERN_UPDATE_NO_WHERE,
+    PATTERN_DANGEROUS_FILE_WRITE,
+    PATTERN_SHUTDOWN_REBOOT,
+    PATTERN_DISK_WIPE,
     PATTERN_GIT_FORCE_PUSH,
     PATTERN_GOVERNANCE_SELF_MODIFY,
 )
