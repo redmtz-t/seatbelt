@@ -34,6 +34,9 @@ redmtz/whitelists/role_claudius.json
 # OS
 .DS_Store
 
+# VS Code workspace files — may contain internal paths
+*.code-workspace
+
 # Python build artifacts
 dist/
 build/
